@@ -3,7 +3,7 @@
 # This file is part of Product Opener.
 # 
 # Product Opener
-# Copyright (C) 2011-2018 Association Open Food Facts
+# Copyright (C) 2011-2019 Association Open Food Facts
 # Contact: contact@openfoodfacts.org
 # Address: 21 rue des Iles, 94100 Saint-Maur des Fossés, France
 # 
@@ -462,7 +462,7 @@ while (my $imported_product_ref = $csv->getline_hr ($io)) {
 				if (1 and (not $product_ref)) {
 					print "product code $code does not exist yet, creating product\n";
 					$User_id = $photo_user_id;
-					$product_ref = init_product($code);
+					$product_ref = init_product($User_id, undef, $code);
 					$product_ref->{interface_version_created} = "import_systemeu.pl - version 2018/03/04";
 					$product_ref->{lc} = $global_params{lc};
 					delete $product_ref->{countries};
@@ -1003,7 +1003,7 @@ ble => "bouteille",
 							$tag =~ s/\s+$//;
 
 							if (defined $taxonomy_fields{$field}) {
-								$tagid = get_taxonomyid(canonicalize_taxonomy_tag($params{lc}, $field, $tag));
+								$tagid = get_taxonomyid($params{lc}, canonicalize_taxonomy_tag($params{lc}, $field, $tag));
 							}
 							else {
 								$tagid = get_fileid($tag);

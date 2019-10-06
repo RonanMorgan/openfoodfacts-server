@@ -21,7 +21,7 @@
 package ProductOpener::Config;
 
 use utf8;
-use Modern::Perl '2012';
+use Modern::Perl '2017';
 use Exporter    qw< import >;
 
 BEGIN
@@ -29,6 +29,7 @@ BEGIN
 	use vars       qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 	@EXPORT = qw();
 	@EXPORT_OK = qw(
+		%string_normalization_for_lang
 		%admins
 		%moderators
 
@@ -67,6 +68,7 @@ BEGIN
 		$page_size
 
 		%options
+		%server_options
 
 		%wiki_texts
 
@@ -91,6 +93,58 @@ use vars @EXPORT_OK ; # no 'my' keyword for these
 
 use ProductOpener::Config2;
 
+# define the normalization applied to change a string to a tag id (in particular for taxonomies)
+# tag ids are also used in URLs.
+
+# unaccent:
+# - useful when accents are sometimes ommited (e.g. in French accents are often not present on capital letters),
+# either in print, or when typed by users.
+# - dangerous if different words (in the same context like ingredients or category names) have the same unaccented form
+# lowercase:
+# - useful when the same word appears in lowercase, with a first capital letter, or in all caps.
+
+%string_normalization_for_lang = (
+	# no_language is used for strings that are not in a specific language (e.g. user names)
+	no_language => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+	# default is used for languages that do not have specified values
+	default => {
+		unaccent => 0,
+		lowercase => 1,
+	},
+	# German umlauts should not be converted (e.g. ä -> ae) as there are many conflicts
+	de => {
+		unaccent => 0,
+		lowercase => 1,
+	},
+	# French has very few actual conflicts caused by unaccenting (one counter example is "pâtes" and "pâtés")
+	# Accents or often not present in capital letters (beginning of word, or in all caps text).
+	fr => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+	# Same for Spanish, Italian and Portuguese
+	es => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+	it => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+	pt => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+	# English has very few accented words, and they are very often not accented by users or in ingredients lists etc.
+	en => {
+		unaccent => 1,
+		lowercase => 1,
+	},
+);
+
 %admins = map { $_ => 1 } qw(
 	agamitsudo
 	aleene
@@ -104,6 +158,7 @@ use ProductOpener::Config2;
 	lucaa
 	mbe
 	moon-rabbit
+	raphael0202
 	sebleouf
 	segundo
 	stephane
@@ -300,6 +355,10 @@ $crowdin_project_key = $ProductOpener::Config2::crowdin_project_key;
 
 $robotoff_url = $ProductOpener::Config2::robotoff_url;
 
+# server options
+
+%server_options = %ProductOpener::Config2::server_options;
+
 $reference_timezone = 'Europe/Paris';
 
 $contact_email = 'contact@openfoodfacts.org';
@@ -355,7 +414,7 @@ my @related_applications = (
 	{ 'platform' => 'windows', 'id' => '9nblggh0dkqr', 'url' => 'https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr' },
 );
 
-my $manifest = { 
+my $manifest = {
 	icons => \@icons,
 	related_applications => \@related_applications,
 	theme_color => '#ffffff',
@@ -396,7 +455,7 @@ $options{categories_not_considered_as_beverages_for_nutriscore} = [qw(
 	en:chocolate-powders
 	en:soups
 	en:coffees
-	en:teas
+	en:tea-bags
 	en:herbal-teas
 )];
 
@@ -410,16 +469,19 @@ $options{categories_considered_as_beverages_for_nutriscore} = [qw(
 )];
 
 $options{categories_exempted_from_nutriscore} = [qw(
+	en:alcoholic-beverages
+	en:aromatic-herbs
 	en:baby-foods
 	en:baby-milks
-	en:meal-replacements
-	en:alcoholic-beverages
+	en:chewing-gum
 	en:coffees
-	en:teas
+	en:food-additives
 	en:herbal-teas
-	fr:levure
-	fr:levures
 	en:honeys
+	en:meal-replacements
+	en:salts
+	en:spices
+	en:sugar-substitutes
 	en:vinegars
 	en:pet-food
 	en:non-food-products
@@ -483,8 +545,8 @@ $options{categories_exempted_from_nutrient_levels} = [qw(
 # fields for which we will load taxonomies
 
 @taxonomy_fields = qw(states countries languages labels categories additives additives_classes
- vitamins minerals amino_acids nucleotides other_nutritional_substances allergens traces
- nutrient_levels misc ingredients nova_groups);
+vitamins minerals amino_acids nucleotides other_nutritional_substances allergens traces
+nutrient_levels misc ingredients ingredients_analysis nova_groups ingredients_processing);
 
 
 # fields in product edit form, above ingredients and nutrition facts
@@ -495,23 +557,23 @@ $options{categories_exempted_from_nutrient_levels} = [qw(
 # fields currently not shown in the default edit form, can be used in imports or advanced edit forms
 
 @product_other_fields = qw(
-	producter_product_id 
+	producer_product_id
 	producer_version_id
-	net_weight_value 
-	net_weight_unit 
-	drained_weight_value 
-	drained_weight_unit 
-	volume_value 
+	net_weight_value
+	net_weight_unit
+	drained_weight_value
+	drained_weight_unit
+	volume_value
 	volume_unit
-	other_information 
-	conservation_conditions 
+	other_information
+	conservation_conditions
 	recycling_instructions_to_recycle
 	recycling_instructions_to_discard
 	nutrition_grade_fr_producer
-	recipe_idea origin 
-	customer_service 
-	producer 
-	preparation 
+	recipe_idea origin
+	customer_service
+	producer
+	preparation
 	warning
 	data_sources
 );
@@ -521,18 +583,18 @@ $options{categories_exempted_from_nutrient_levels} = [qw(
 # do not show purchase_places
 
 @display_fields = qw(
-	generic_name 
-	quantity 
-	packaging 
-	brands 
-	categories 
-	labels 
-	origin 
+	generic_name
+	quantity
+	packaging
+	brands
+	categories
+	labels
+	origin
 	origins
-	producer 
-	manufacturing_places 
-	emb_codes 
-	link stores 
+	producer
+	manufacturing_places
+	emb_codes
+	link stores
 	countries
 );
 
@@ -621,6 +683,22 @@ $options{categories_exempted_from_nutrient_levels} = [qw(
 );
 
 
+$options{import_export_fields_groups} = [
+	["identification", ["code", "producer_product_id", "producer_version_id", "lc", "product_name", "generic_name",
+		"quantity_value_unit", "net_weight_value_unit", "drained_weight_value_unit", "volume_value_unit", "packaging",
+		"brands", "categories", "categories_specific", "labels", "labels_specific", "countries", "stores"]
+	],
+	["origins", ["origins", "origin", "manufacturing_places", "producer", "emb_codes"]
+	],
+	["ingredients", ["ingredients_text", "allergens", "traces"]
+	],
+	["nutrition"],
+	["nutrition_other"],
+	["other", ["conservation_conditions", "warning", "preparation", "recipe_idea", "recycling_instructions_to_recycle", "recycling_instructions_to_discard", "customer_service", "link"]
+	],
+];
+
+
 # for ingredients OCR, we use tesseract-ocr
 # on debian, dictionaries are in /usr/share/tesseract-ocr/tessdata
 # %tesseract_ocr_available_languages provides mapping between OFF 2 letter language codes
@@ -642,9 +720,9 @@ $options{categories_exempted_from_nutrient_levels} = [qw(
 
 %weblink_templates = (
 
-	'wikidata:en' => { 
-		href => 'https://www.wikidata.org/wiki/%s', 
-		text => 'Wikidata', 
+	'wikidata:en' => {
+		href => 'https://www.wikidata.org/wiki/%s',
+		text => 'Wikidata',
 		parse => sub {
 			my ($url) = @_;
 			if ($url =~ /^https?:\/\/www.wikidata.org\/wiki\/(Q\d+)$/) {
@@ -824,14 +902,14 @@ $options{nova_groups_tags} = {
 	"ingredients/en:bulking-agent" => 4,
 	"ingredients/en:carbonating-agent" => 4,
 	"ingredients/en:colour" => 4,
-	"ingredients/en:colour-stabilizer" => 4,	
+	"ingredients/en:colour-stabilizer" => 4,
 	"ingredients/en:emulsifier" => 4,
-	"ingredients/en:firming-agent" => 4,	
-	"ingredients/en:flavour-enhancer" => 4,	
+	"ingredients/en:firming-agent" => 4,
+	"ingredients/en:flavour-enhancer" => 4,
 	"ingredients/en:gelling-agent" => 4,
-	"ingredients/en:glazing-agent" => 4,	
+	"ingredients/en:glazing-agent" => 4,
 	"ingredients/en:sequestrant" => 4,
-	"ingredients/en:sweetener" => 4,	
+	"ingredients/en:sweetener" => 4,
 	"ingredients/en:thickener" => 4,
 	"ingredients/en:humectant" => 4,
 
@@ -1011,17 +1089,17 @@ $options{nova_groups_tags} = {
 	"additives/en:e968" => 4, #Erythritol
 	"additives/en:e969" => 4, #Advantame
 
-	
+
 	# anti-foaming agents
 
-	"additives/en:e551" => 4,	
+	"additives/en:e551" => 4,
 	"additives/en:e900a" => 4,
 	"additives/en:e905c" => 4,
 	"additives/en:e905d" => 4,
 	"additives/en:e1521" => 4,
-	
+
 	# glazing agents
-	
+
 	"additives/en:e900" => 4,
 	"additives/en:e901" => 4,
 	"additives/en:e902" => 4,
@@ -1029,21 +1107,21 @@ $options{nova_groups_tags} = {
 	"additives/en:e904" => 4,
 	"additives/en:e905" => 4,
 	"additives/en:e907" => 4,
-	
+
 	# propellants
-	
+
 	"additives/en:e938" => 4,
 	"additives/en:e939" => 4,
 	"additives/en:e941" => 4,
 	"additives/en:e942" => 4,
 	"additives/en:e943a" => 4,
 	"additives/en:e943b" => 4,
-	
+
 	# bulking agents / thickeners / stabilizers / emulsifiers / gelling agents
-	
+
 	"additives/en:e400" => 4,
 	"additives/en:e401" => 4,
-	"additives/en:e402" => 4,	
+	"additives/en:e402" => 4,
 	"additives/en:e403" => 4,
 	"additives/en:e404" => 4,
 	"additives/en:e405" => 4,
@@ -1062,23 +1140,23 @@ $options{nova_groups_tags} = {
 	"additives/en:e415" => 4,
 	"additives/en:e416" => 4,
 	"additives/en:e417" => 4,
-	"additives/en:e418" => 4,	
+	"additives/en:e418" => 4,
 	"additives/en:e420" => 4, #Sorbitol
-	"additives/en:e421" => 4, #Mannitol	
-	"additives/en:e422" => 4,	
-	"additives/en:e425" => 4,	
-	"additives/en:e428" => 4,	
-	"additives/en:e430" => 4,	
-	"additives/en:e431" => 4,	
-	"additives/en:e432" => 4,	
-	"additives/en:e433" => 4,	
-	"additives/en:e434" => 4,	
-	"additives/en:e435" => 4,	
-	"additives/en:e436" => 4,	
+	"additives/en:e421" => 4, #Mannitol
+	"additives/en:e422" => 4,
+	"additives/en:e425" => 4,
+	"additives/en:e428" => 4,
+	"additives/en:e430" => 4,
+	"additives/en:e431" => 4,
+	"additives/en:e432" => 4,
+	"additives/en:e433" => 4,
+	"additives/en:e434" => 4,
+	"additives/en:e435" => 4,
+	"additives/en:e436" => 4,
 	"additives/en:e440" => 4,
-	"additives/en:e441" => 4,	
+	"additives/en:e441" => 4,
 	"additives/en:e442" => 4,
-	"additives/en:e443" => 4,	
+	"additives/en:e443" => 4,
 	"additives/en:e444" => 4,
 	"additives/en:e445" => 4,
 	"additives/en:e450" => 4,
@@ -1088,58 +1166,58 @@ $options{nova_groups_tags} = {
 	"additives/en:e460" => 4,
 	"additives/en:e461" => 4,
 	"additives/en:e463" => 4,
-	"additives/en:e464" => 4,	
-	"additives/en:e465" => 4,	
-	"additives/en:e466" => 4,	
-	"additives/en:e468" => 4,	
-	"additives/en:e469" => 4,	
-	"additives/en:e470" => 4,	
-	"additives/en:e470a" => 4,	
-	"additives/en:e470b" => 4,	
-	"additives/en:e471" => 4,	
-	"additives/en:e472a" => 4,	
-	"additives/en:e472b" => 4,	
-	"additives/en:e472c" => 4,	
-	"additives/en:e472d" => 4,	
-	"additives/en:e472e" => 4,	
-	"additives/en:e472f" => 4,	
-	"additives/en:e473" => 4,	
-	"additives/en:e474" => 4,	
-	"additives/en:e475" => 4,	
-	"additives/en:e476" => 4,	
-	"additives/en:e477" => 4,	
-	"additives/en:e478" => 4,	
-	"additives/en:e479b" => 4,	
-	"additives/en:e480" => 4,	
-	"additives/en:e481" => 4,	
-	"additives/en:e482" => 4,	
-	"additives/en:e483" => 4,	
-	"additives/en:e491" => 4,	
-	"additives/en:e492" => 4,	
-	"additives/en:e493" => 4,	
-	"additives/en:e494" => 4,	
-	"additives/en:e495" => 4,	
-	
-	"additives/en:e1400" => 4,	
-	"additives/en:e1401" => 4,	
-	"additives/en:e1402" => 4,	
-	"additives/en:e1403" => 4,	
-	"additives/en:e1404" => 4,	
-	"additives/en:e1405" => 4,	
-	"additives/en:e1410" => 4,	
-	"additives/en:e1412" => 4,	
-	"additives/en:e1413" => 4,	
-	"additives/en:e1414" => 4,	
-	"additives/en:e1420" => 4,	
-	"additives/en:e1422" => 4,	
-	"additives/en:e1440" => 4,	
-	"additives/en:e1442" => 4,	
-	"additives/en:e1450" => 4,	
-	"additives/en:e1451" => 4,	
+	"additives/en:e464" => 4,
+	"additives/en:e465" => 4,
+	"additives/en:e466" => 4,
+	"additives/en:e468" => 4,
+	"additives/en:e469" => 4,
+	"additives/en:e470" => 4,
+	"additives/en:e470a" => 4,
+	"additives/en:e470b" => 4,
+	"additives/en:e471" => 4,
+	"additives/en:e472a" => 4,
+	"additives/en:e472b" => 4,
+	"additives/en:e472c" => 4,
+	"additives/en:e472d" => 4,
+	"additives/en:e472e" => 4,
+	"additives/en:e472f" => 4,
+	"additives/en:e473" => 4,
+	"additives/en:e474" => 4,
+	"additives/en:e475" => 4,
+	"additives/en:e476" => 4,
+	"additives/en:e477" => 4,
+	"additives/en:e478" => 4,
+	"additives/en:e479b" => 4,
+	"additives/en:e480" => 4,
+	"additives/en:e481" => 4,
+	"additives/en:e482" => 4,
+	"additives/en:e483" => 4,
+	"additives/en:e491" => 4,
+	"additives/en:e492" => 4,
+	"additives/en:e493" => 4,
+	"additives/en:e494" => 4,
+	"additives/en:e495" => 4,
+
+	"additives/en:e1400" => 4,
+	"additives/en:e1401" => 4,
+	"additives/en:e1402" => 4,
+	"additives/en:e1403" => 4,
+	"additives/en:e1404" => 4,
+	"additives/en:e1405" => 4,
+	"additives/en:e1410" => 4,
+	"additives/en:e1412" => 4,
+	"additives/en:e1413" => 4,
+	"additives/en:e1414" => 4,
+	"additives/en:e1420" => 4,
+	"additives/en:e1422" => 4,
+	"additives/en:e1440" => 4,
+	"additives/en:e1442" => 4,
+	"additives/en:e1450" => 4,
+	"additives/en:e1451" => 4,
 	"additives/en:e1505" => 4,
-	
+
 	"additives/en:e14xx" => 4,
-	
+
 	# carbonating agents
 
 	"additives/en:e290" => 4, # carbon dioxyde

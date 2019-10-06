@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: hy\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-05-03 21:04\n"
+"PO-Revision-Date: 2019-10-01 20:08\n"
 "Language-Team: Armenian\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -65,6 +65,7 @@ msgid "Hello <NAME>,\n\n"
 "https://twitter.com/OpenFoodFacts\n"
 msgstr ""
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr ""
@@ -121,16 +122,19 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr ""
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
-msgid "<img src=\"/images/misc/android-apk.112x40.png\" alt=\"Android APK\" />"
+msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr ""
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr ""
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
-msgid "<img src=\"/images/misc/android-app-on-google-play-en_app_rgb_wo_135x47.png\" alt=\"Available on Google Play\" width=\"135\" height=\"47\" />"
+msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr ""
 
 # Change hl=en to your language, and make sure the url works
@@ -180,7 +184,7 @@ msgid "<a href=\"https://www.helloasso.com/associations/open-food-facts/formulai
 msgstr ""
 
 msgctxt "bottom_title"
-msgid "Embrace the mission"
+msgid "Donate to support our work"
 msgstr ""
 
 msgctxt "brands"
@@ -839,6 +843,30 @@ msgctxt "image_upload_error_no_barcode_found_in_text"
 msgid "You must enter the characters of the barcode or send a product image when the barcode is visible."
 msgstr ""
 
+msgctxt "image_full_size"
+msgid "Full size"
+msgstr ""
+
+msgctxt "image_attribution_creativecommons"
+msgid "This file was uploaded to product %s and is licensed under the %s license."
+msgstr ""
+
+msgctxt "image_attribution_photographer"
+msgid "Attribution: Photo by %s per %s"
+msgstr ""
+
+msgctxt "image_attribution_photographer_editor"
+msgid "Attribution: Photo by %s with additional modifications by %s per %s"
+msgstr ""
+
+msgctxt "image_original_link_text"
+msgid "(Original Image)"
+msgstr ""
+
+msgctxt "image_attribution_link_title"
+msgid "Photo detail and attribution information"
+msgstr ""
+
 msgctxt "incomplete_products_you_added"
 msgid "Products you added that need to be completed"
 msgstr ""
@@ -858,10 +886,6 @@ msgstr "Բաղադրամասեր"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Բաղադրամասեր"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr ""
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -932,11 +956,11 @@ msgid "Products that do not contain the ingredient %s"
 msgstr ""
 
 msgctxt "ios_app_badge"
-msgid "<img src=\"/images/misc/Available_on_the_App_Store_Badge_EN_135x40.png\" alt=\"Available on the App Store\" width=\"135\" height=\"40\" />"
+msgid "<img src=\"/images/misc/appstore/black/appstore_US.svg\" alt=\"Available on the App Store\" width=\"120\" height=\"40\" />"
 msgstr ""
 
 msgctxt "ios_app_link"
-msgid "https://itunes.apple.com/app/open-food-facts/id588797948"
+msgid "https://apps.apple.com/app/open-food-facts/id588797948"
 msgstr ""
 
 msgctxt "known_nutrients_p"
@@ -2073,7 +2097,7 @@ msgid "Scatter plot"
 msgstr ""
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
 msgstr ""
 
 msgctxt "search_graph_choice"
@@ -2266,9 +2290,8 @@ msgid "Serving size"
 msgstr ""
 
 msgctxt "serving_size_prepared"
-msgid ""
+msgid "Prepared serving size"
 msgstr ""
-""
 
 msgctxt "serving_size_example"
 msgid "60 g, 12 oz, 20cl, 2 fl oz"
@@ -2312,6 +2335,10 @@ msgstr ""
 
 msgctxt "sort_by"
 msgid "Sort by"
+msgstr ""
+
+msgctxt "sort_completeness"
+msgid "Completeness"
 msgstr ""
 
 msgctxt "sort_created_t"
@@ -2508,19 +2535,21 @@ msgstr ""
 
 msgctxt "warning_3rd_party_content"
 msgid "Information and data must come from the product package and label (and not from other sites or the manufacturer's site), and you must have taken the pictures yourself.<br/>\n"
-"→ <a href=\"\">Why it matters</a>"
+"→ <a href=\"/faq#pictures_and_data_from_other_sites\">Why it matters</a>"
 msgstr ""
 
 msgctxt "website"
 msgid "Site or blog address"
 msgstr ""
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
-msgid "<img src=\"/images/misc/154x40_WP_Store_blk.png\" alt=\"Windows Phone Store\" width=\"154\" height=\"40\" />"
+msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr ""
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr ""
 
 msgctxt "you_are_connected_as_x"
@@ -3036,50 +3065,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr ""
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr ""
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr ""
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr ""
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr ""
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr ""
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr ""
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr ""
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr ""
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr ""
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr ""
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr ""
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr ""
@@ -3114,34 +3099,6 @@ msgstr ""
 
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
-msgstr ""
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr ""
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Զգուշացում"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr ""
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr ""
-
-msgctxt "origin"
-msgid "Origin"
-msgstr ""
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr ""
-
-msgctxt "producer"
-msgid "Producer"
 msgstr ""
 
 msgctxt "environment_infocard"
@@ -3205,7 +3162,7 @@ msgid "Help translate the %s to %s"
 msgstr ""
 
 msgctxt "translate_taxonomy_description"
-msgid "You can suggests translations for the entries below that have not been translated to your language yet. The blue link in English shows the corresponding products, the black text in English shows the original entry with optional synonyms separated by commas. Enter the translation in the text box, with optional synonyms, and then click on the Save button. Thank you!"
+msgid "You can suggest translations for the entries below that have not been translated to your language yet. The blue link in English shows the corresponding products, the black text in English shows the original entry with optional synonyms separated by commas. Enter the translation in the text box, with optional synonyms, and then click on the Save button. Thank you!"
 msgstr ""
 
 msgctxt "translate_taxonomy_add"
@@ -3238,5 +3195,259 @@ msgstr "Ոչ"
 
 msgctxt "button_caption_skip"
 msgid "Skip"
+msgstr ""
+
+msgctxt "popularity_s"
+msgid "popularity"
+msgstr ""
+
+msgctxt "popularity_p"
+msgid "popularity"
+msgstr ""
+
+msgctxt "ingredients_analysis_p"
+msgid "ingredients analysis"
+msgstr ""
+
+msgctxt "ingredients_analysis_s"
+msgid "ingredients analysis"
+msgstr ""
+
+msgctxt "ingredients_analysis"
+msgid "Ingredients analysis"
+msgstr ""
+
+msgctxt "ingredients_analysis_disclaimer"
+msgid "The analysis is based solely on the ingredients listed and does not take into account processing methods."
+msgstr ""
+
+msgctxt "rev_warning"
+msgid "You are viewing an old version of this product page!"
+msgstr ""
+
+msgctxt "rev_number"
+msgid "Revision number: "
+msgstr ""
+
+msgctxt "rev_contributor"
+msgid "Edited by: "
+msgstr ""
+
+msgctxt "rev_previous"
+msgid "Previous version"
+msgstr ""
+
+msgctxt "rev_next"
+msgid "Next version"
+msgstr ""
+
+msgctxt "rev_latest"
+msgid "Latest version"
+msgstr ""
+
+msgctxt "import_data_file_title"
+msgid "Import a product data file"
+msgstr ""
+
+msgctxt "import_data_file_description"
+msgid "Upload a spreadsheet file (Excel file or a tab separated UTF-8 encoded CSV file) with products data."
+msgstr ""
+
+msgctxt "import_data_file_format"
+msgid "You can upload a table with the columns Open Food Facts import format, or you can upload a table in any format and then select the columns to import."
+msgstr ""
+
+msgctxt "upload_products_data_file"
+msgid "Upload a file with products data"
+msgstr ""
+
+msgctxt "uploading_file"
+msgid "File being uploaded."
+msgstr ""
+
+msgctxt "upload_error"
+msgid "The file could not be uploaded."
+msgstr ""
+
+msgctxt "import_data_file_select_format_title"
+msgid "Select and import data"
+msgstr ""
+
+msgctxt "import_data_file_select_format_description"
+msgid "Use the form below to indicate which columns to import and what data they contain."
+msgstr ""
+
+msgctxt "import_data"
+msgid "Import data"
+msgstr ""
+
+msgctxt "import_file_rows_columns"
+msgid "The uploaded file contains %s rows and %s columns."
+msgstr ""
+
+msgctxt "import_file_selected_columns"
+msgid "%s columns out of %s have been selected and will be imported."
+msgstr ""
+
+msgctxt "fields_group_identification"
+msgid "Product identification"
+msgstr ""
+
+msgctxt "fields_group_origins"
+msgid "Origins"
+msgstr ""
+
+msgctxt "fields_group_ingredients"
+msgid "Ingredients"
+msgstr "Բաղադրամասեր"
+
+msgctxt "fields_group_nutrition"
+msgid "Nutrition facts"
+msgstr ""
+
+msgctxt "fields_group_nutrition_other"
+msgid "Optional nutrition facts"
+msgstr ""
+
+msgctxt "fields_group_other"
+msgid "Other information"
+msgstr ""
+
+msgctxt "labels_specific"
+msgid "Specific label"
+msgstr ""
+
+msgctxt "categories_specific"
+msgid "Specific category"
+msgstr ""
+
+msgctxt "select_a_field"
+msgid "Select a field"
+msgstr ""
+
+msgctxt "specify"
+msgid "Specify"
+msgstr ""
+
+msgctxt "value_unit_dropdown"
+msgid "In the dropdown menu on the right, specify if the column contains:"
+msgstr ""
+
+msgctxt "value_unit_dropdown_value_unit"
+msgid "the value and the unit"
+msgstr ""
+
+msgctxt "value_unit_dropdown_value_specific_unit"
+msgid "the value in a specific unit"
+msgstr ""
+
+msgctxt "value_unit_dropdown_value"
+msgid "only the value, with the unit in another column"
+msgstr ""
+
+msgctxt "value_unit_dropdown_unit"
+msgid "only the unit, with the value in another column"
+msgstr ""
+
+# Please do not translate Y, Yes and 1
+msgctxt "specific_tag_label"
+msgid "Select this option if the column indicates the presence of a specific label (e.g. Organic, Fair-Trade) when the value is either Y, Yes or 1."
+msgstr ""
+
+msgctxt "specific_tag_label_value"
+msgid "Type the name of the label in the text field on the right."
+msgstr ""
+
+# Please do not translate Y, Yes and 1
+msgctxt "specific_tag_category"
+msgid "Select this option if the column indicates that the product is in a specific category (e.g. Beverages) when the value is either Y, Yes or 1."
+msgstr ""
+
+msgctxt "specific_tag_category_value"
+msgid "Type the name of the category in the text field on the right."
+msgstr ""
+
+msgctxt "value"
+msgid "Value"
+msgstr ""
+
+msgctxt "value_unit"
+msgid "Value + Unit"
+msgstr ""
+
+msgctxt "value_in_l"
+msgid "Value in L"
+msgstr ""
+
+msgctxt "value_in_dl"
+msgid "Value in dl"
+msgstr ""
+
+msgctxt "value_in_cl"
+msgid "Value in cl"
+msgstr ""
+
+msgctxt "value_in_ml"
+msgid "Value in ml"
+msgstr ""
+
+msgctxt "value_in_kg"
+msgid "Value in kg"
+msgstr ""
+
+msgctxt "value_in_g"
+msgid "Value in g"
+msgstr ""
+
+msgctxt "value_in_mg"
+msgid "Value in mg"
+msgstr ""
+
+msgctxt "value_in_mcg"
+msgid "Value in μg"
+msgstr ""
+
+msgctxt "value_in_kcal"
+msgid "Value in kcal"
+msgstr ""
+
+msgctxt "value_in_kj"
+msgid "Value in kJ"
+msgstr ""
+
+msgctxt "value_in_percent"
+msgid "Value in %"
+msgstr ""
+
+msgctxt "no_owner_defined"
+msgid "Please log-in to use this feature."
+msgstr ""
+
+msgctxt "org"
+msgid "Organization"
+msgstr ""
+
+msgctxt "column_in_file"
+msgid "Column in file"
+msgstr ""
+
+msgctxt "field_on_site"
+msgid "Field on %"
+msgstr ""
+
+msgctxt "producers_platform"
+msgid "Platform for producers"
+msgstr ""
+
+msgctxt "producers_platform_description"
+msgid "The producers platform allows manufacturers to easily manage their products photos and data on Open Food Facts."
+msgstr ""
+
+msgctxt "import_product_data"
+msgid "Import product data"
+msgstr ""
+
+msgctxt "import_product_photos"
+msgid "Import product photos"
 msgstr ""
 

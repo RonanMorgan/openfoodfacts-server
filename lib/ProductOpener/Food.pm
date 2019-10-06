@@ -21,7 +21,7 @@
 package ProductOpener::Food;
 
 use utf8;
-use Modern::Perl '2012';
+use Modern::Perl '2017';
 use Exporter    qw< import >;
 
 BEGIN
@@ -68,9 +68,11 @@ BEGIN
 
 					&compare_nutriments
 
+					$ec_code_regexp
 					%packager_codes
 					%geocode_addresses
 					&normalize_packager_codes
+					&localize_packager_code
 					&get_canon_local_authority
 
 					&special_process_product
@@ -191,10 +193,10 @@ sub assign_nid_modifier_value_and_unit($$$$$) {
 		$unit = $Nutriments{$nid}{unit};
 	}
 	if ($nid eq 'water-hardness') {
-		$product_ref->{nutriments}{$nid} = unit_to_mmoll($value, $unit);
+		$product_ref->{nutriments}{$nid} = unit_to_mmoll($value, $unit) + 0;
 	}
 	else {
-		$product_ref->{nutriments}{$nid} = unit_to_g($value, $unit);
+		$product_ref->{nutriments}{$nid} = unit_to_g($value, $unit) + 0;
 	}
 
 }
@@ -233,16 +235,16 @@ sub unit_to_g($$) {
 
 	$value eq '' and return $value;
 
-	$unit eq 'kcal' and return int($value * 4.184 + 0.5);
-	($unit eq 'kg' or $unit eq "\N{U+516C}\N{U+65A4}") and return $value * 1000;
+	(($unit eq 'kcal') or ($unit eq 'ккал')) and return int($value * 4.184 + 0.5);
+	(($unit eq 'kg') or ($unit eq "\N{U+516C}\N{U+65A4}") or ($unit eq 'кг')) and return $value * 1000;
 	$unit eq "\N{U+65A4}" and return $value * 500;
-	($unit eq 'mg' or $unit eq "\N{U+6BEB}\N{U+514B}") and return $value / 1000;
+	(($unit eq 'mg') or ($unit eq "\N{U+6BEB}\N{U+514B}") or ($unit eq 'мг')) and return $value / 1000;
 	(($unit eq 'mcg') or ($unit eq 'µg')) and return $value / 1000000;
 	$unit eq 'oz' and return $value * 28.349523125;
 
-	($unit eq 'l' or $unit eq "\N{U+516C}\N{U+5347}") and return $value * 1000;
-	$unit eq 'dl' and return $value * 100;
-	$unit eq 'cl' and return $value * 10;
+	(($unit eq 'l') or ($unit eq "\N{U+516C}\N{U+5347}") or ($unit eq 'л')) and return $value * 1000;
+	(($unit eq 'dl') or ($unit eq 'дл')) and return $value * 100;
+	(($unit eq 'cl') or ($unit eq 'кл')) and return $value * 10;
 	$unit eq 'fl oz' and return $value * 30;
 	return $value + 0; # + 0 to make sure the value is treated as number
 	# (needed when outputting json and to store in mongodb as a number)
@@ -266,16 +268,16 @@ sub g_to_unit($$) {
 
 	$value eq '' and return $value;
 
-	$unit eq 'kcal' and return int($value / 4.184 + 0.5);
-	($unit eq 'kg' or $unit eq "\N{U+516C}\N{U+65A4}") and return $value / 1000;
+	(($unit eq 'kcal') or ($unit eq 'ккал')) and return int($value / 4.184 + 0.5);
+	(($unit eq 'kg') or ($unit eq "\N{U+516C}\N{U+65A4}") or ($unit eq 'кг')) and return $value / 1000;
 	$unit eq "\N{U+65A4}" and return $value / 500;
-	($unit eq 'mg' or $unit eq "\N{U+6BEB}\N{U+514B}") and return $value * 1000;
+	(($unit eq 'mg') or ($unit eq "\N{U+6BEB}\N{U+514B}") or ($unit eq 'мг')) and return $value * 1000;
 	(($unit eq 'mcg') or ($unit eq 'µg')) and return $value * 1000000;
 	$unit eq 'oz' and return $value / 28.349523125;
 
-	($unit eq 'l' or $unit eq "\N{U+516C}\N{U+5347}") and return $value / 1000;
-	$unit eq 'dl' and return $value / 100;
-	$unit eq 'cl' and return $value / 10;
+	(($unit eq 'l') or ($unit eq "\N{U+516C}\N{U+5347}") or ($unit eq 'л')) and return $value / 1000;
+	(($unit eq 'dl') or ($unit eq 'дл')) and return $value / 100;
+	(($unit eq 'cl') or ($unit eq 'кл')) and return $value / 10;
 	$unit eq 'fl oz' and return $value / 30;
 	return $value + 0; # + 0 to make sure the value is treated as number
 	# (needed when outputting json and to store in mongodb as a number)
@@ -995,6 +997,7 @@ sub mmoll_to_unit {
 		hu => "Energia zsírból",
 		ja => "脂質からのエネルギー",
 		pt => "Energia des gorduras",
+		ro => "Valoarea energetică din grăsimi",
 		ru => "Энергетическая ценность жиров",
 		zh => "来自脂肪的能量",
 		zh_CN => "来自脂肪的能量",
@@ -1102,7 +1105,7 @@ sub mmoll_to_unit {
 		zh_TW => "酪蛋白",
 	},
 	nucleotides => {
-			de => "Nukleotide",
+		de => "Nukleotide",
 		fa => "نوکلئوتید",
 		fr => "Nucléotides",
 		en => "Nucleotides",
@@ -1114,6 +1117,7 @@ sub mmoll_to_unit {
 		el => "Νουκλεοτίδια",
 		ja => "ヌクレオチド",
 		pt => "nucleotídeos",
+		ro => "Nucleotide",
 		zh => "核苷酸",
 		zh_TW => "核苷酸",
 		zh_HK => "核苷酸",
@@ -1130,6 +1134,7 @@ sub mmoll_to_unit {
 		nl => "Plasmaproteïnen",
 		nl_be => "Plasmaproteïnen",
 		pt => "proteína plasmatica",
+		ro => "Proteine ​​serice",
 		zh => "血清蛋白",
 		zh_CN => "血清蛋白",
 		zh_HK => "血清蛋白",
@@ -1163,7 +1168,7 @@ sub mmoll_to_unit {
 		pt => "Hidratos de carbono",
 		pt_br => "Carboidratos",
 		pt_pt => "Hidratos de carbono",
-		ro => "gGlucide",
+		ro => "Glucide",
 		rs => "Ugljeni hidrati",
 		ru => "Углеводы",
 		sk => "Sacharidy",
@@ -1229,6 +1234,7 @@ sub mmoll_to_unit {
 		nl => "Sucrose",
 		nl_be => "Sucrose",
 		pt => "Sacarose",
+		ro => "Zaharoză",
 		rs => "Saharoza",
 		ru => "Сахароза",
 		zh => "蔗糖",
@@ -1250,6 +1256,7 @@ sub mmoll_to_unit {
 		nl => "Glucose",
 		nl_be => "Glucose",
 		pt => "Glucose",
+		ro => "Glucoză",
 		ru => "Глюкоза (декстроза)",
 		zh => "葡萄糖",
 		zh_CN => "葡萄糖",
@@ -1270,6 +1277,7 @@ sub mmoll_to_unit {
 		nl_be => "Fructose",
 		pt => "Frutose",
 		rs => "Fruktoza",
+		ro => "Fructoză",
 		ru => "Фруктоза",
 		zh => "果糖",
 		zh_CN => "果糖",
@@ -1291,6 +1299,7 @@ sub mmoll_to_unit {
 		nl_be => "Lactose",
 		pt => "Lactose",
 		rs => "Laktoza",
+		ro => "Lactoză",
 		ru => "Лактоза",
 		zh => "乳糖",
 		zh_CN => "乳糖",
@@ -1310,6 +1319,7 @@ sub mmoll_to_unit {
 		nl => "Maltose",
 		nl_be => "Maltose",
 		pt => "Maltose",
+		ro => "Maltoză",
 		ru => "Мальтоза",
 		zh => "麦芽糖",
 		zh_CN => "麦芽糖",
@@ -1329,6 +1339,7 @@ sub mmoll_to_unit {
 		nl => "Maltodextrine",
 		nl_be => "Maltodextrine",
 		pt => "Maltodextrinas",
+		ro => "Maltodextrină",
 		ru => "Мальтодекстрин",
 		zh => "麦芽糊精",
 		zh_CN => "麦芽糊精",
@@ -1489,6 +1500,7 @@ sub mmoll_to_unit {
 		nl => "Boterzuur (4:0)",
 		nl_be => "Boterzuur (4:0)",
 		pt => "Ácido butírico (4:0)",
+		ro => "Acid butiric (4:0)",
 		ru => "Масляная кислота (4:0)",
 		zh => "丁酸 (4:0)",
 		zh_CN => "丁酸 (4:0)",
@@ -1506,6 +1518,7 @@ sub mmoll_to_unit {
 		nl => "Capronzuur (6:0)",
 		nl_be => "Capronzuur (6:0)",
 		pt => "Ácido capróico (6:0)",
+		ro => "Acid caproic (6:0)",
 		ru => "Капроновая кислота (6:0)",
 		zh => "己酸 (6:0)",
 		zh_CN => "己酸 (6:0)",
@@ -1523,6 +1536,7 @@ sub mmoll_to_unit {
 		nl => "Octaanzuur (8:0)",
 		nl_be => "Octaanzuur (8:0)",
 		pt => "Ácido caprílico (8:0)",
+		ro => "Acid caprilic (8:0)",
 		ru => "Каприловая кислота (8:0)",
 		zh => "辛酸 (8:0)",
 		zh_CN => "辛酸 (8:0)",
@@ -1540,6 +1554,7 @@ sub mmoll_to_unit {
 		nl => "Decaanzuur (10:0)",
 		nl_be => "Decaanzuur (10:0)",
 		pt => "Ácido cáprico (10:0)",
+		ro => "Acid capric (10:0)",
 		ru => "Каприновая кислота (10:0)",
 		zh => "癸酸 (10:0)",
 		zh_CN => "癸酸 (10:0)",
@@ -1556,6 +1571,7 @@ sub mmoll_to_unit {
 		nl => "Laurinezuur (12:0)",
 		nl_be => "Laurinezuur (12:0)",
 		pt => "Ácido láurico (12:0)",
+		ro => "Acid lauric (12:0)",
 		ru => "Лауриновая кислота (12:0)",
 		zh => "十二酸 (12:0)",
 		zh_CN => "十二酸 (12:0)",
@@ -1571,6 +1587,7 @@ sub mmoll_to_unit {
 		he => "חומצה מיריסטית (14:0)",
 		nl => "Myristinezuur (14:0)",
 		pt => "Ácido mirístico (14:0)",
+		ro => "Acidul myristic (14:0)",
 		ru => "Миристиновая кислота (14:0)",
 		zh => "十四酸 (14:0)",
 		zh_CN => "十四酸 (14:0)",
@@ -1587,6 +1604,7 @@ sub mmoll_to_unit {
 		nl => "Palmitinezuur (16:0)",
 		nb => "Palmitinsyre (16:0)",
 		pt => "Ácido palmítico (16:0)",
+		ro => "Acidul palmitic (16:0)",
 		ru => "Пальмитиновая кислота (16:0)",
 		zh => "十六酸 (16:0)",
 		zh_CN => "十六酸 (16:0)",
@@ -1603,6 +1621,7 @@ sub mmoll_to_unit {
 		nl => "Stearinezuur (18:0)",
 		nl_be => "Stearinezuur (18:0)",
 		pt => "Ácido esteárico (18:0)",
+		ro => "Acid stearic (18:0)",
 		ru => "Стеариновая кислота (18:0)",
 		zh => "十八酸 (18:0)",
 		zh_CN => "十八酸 (18:0)",
@@ -1618,6 +1637,7 @@ sub mmoll_to_unit {
 		nl => "Arachidinezuur (20:0)",
 		nl_be => "Arachidinezuur (20:0)",
 		pt => "Ácido araquídico (20:0)",
+		ro => "Acid arachidic (20:0)",
 		ru => "Арахиновая кислота (20:0)",
 		zh => "二十酸 (20:0)",
 		zh_CN => "二十酸 (20:0)",
@@ -1634,6 +1654,7 @@ sub mmoll_to_unit {
 		nl => "Beheenzuur (22:0)",
 		nl_be => "Beheenzuur (22:0)",
 		pt => "Ácido beénico (22:0)",
+		ro => "Acid behenic (22:0)",
 		ru => "Бегеновая кислота (22:0)",
 		zh => "二十二酸 (22:0)",
 		zh_CN => "二十二酸 (22:0)",
@@ -1649,6 +1670,7 @@ sub mmoll_to_unit {
 		nl => "Lignocerinezuur (24:0)",
 		nl_be => "Lignocerinezuur (24:0)",
 		pt => "Ácido lignocérico (24:0)",
+		ro => "Acidul lignoceric (24:0)",
 		ru => "Лигноцериновая кислота (24:0)",
 		zh => "二十四酸 (24:0)",
 		zh_CN => "二十四酸 (24:0)",
@@ -1664,6 +1686,7 @@ sub mmoll_to_unit {
 		nl => "Cerotinezuur (26:0)",
 		nl_be => "Cerotinezuur (26:0)",
 		pt => "Ácido cerótico (26:0)",
+		ro => "Acidul cerotic (26:0)",
 		ru => "Церотиновая кислота (26:0)",
 		zh => "二十六酸 (26:0)",
 		zh_CN => "二十六酸 (26:0)",
@@ -1679,6 +1702,7 @@ sub mmoll_to_unit {
 		nl => "Montaanzuur (28:0)",
 		nl_be => "Montaanzuur (28:0)",
 		pt => "Ácido montânico (28:0)",
+		ro => "Acid montanic (28:0)",
 		ru => "Монтановая кислота (28:0)",
 		zh => "二十八酸 (28:0)",
 		zh_CN => "二十八酸 (28:0)",
@@ -1749,6 +1773,7 @@ sub mmoll_to_unit {
 		nl_be => "Omega 9 vetzuren",
 		pt => "Ácidos Graxos Ômega 9",
 		pt_pt => "Ácidos gordos Ómega 9",
+		ro => "Acizi grași omega-9",
 		ru => "Омега-9 жирные кислоты",
 		zh => "Omega-9 脂肪酸",
 		zh_CN => "Omega-9 脂肪酸",
@@ -1765,6 +1790,7 @@ sub mmoll_to_unit {
 		nl => "Oliezuur (18:1 n-9)",
 		nl_be => "Oliezuur (18:1 n-9)",
 		pt => "Ácido oleico (18:1 n-9)",
+		ro => "Acidul oleic (18:1 n-9)",
 		ru => "Олеиновая кислота (18:1 n-9)",
 		zh => "油酸 (18:1 n-9)",
 		zh_CN => "油酸 (18:1 n-9)",
@@ -1780,6 +1806,7 @@ sub mmoll_to_unit {
 		nl => "Elaïdinezuur (18:1 n-9)",
 		nl_be => "Elaïdinezuur (18:1 n-9)",
 		pt => "Ácido elaídico (18:1 n-9)",
+		ro => "Acid elaidic (18:1 n-9)",
 		ru => "Элаидиновая кислота (18:1 n-9)",
 		zh => "反油酸 (18:1 n-9)",
 		zh_CN => "反油酸 (18:1 n-9)",
@@ -1795,6 +1822,7 @@ sub mmoll_to_unit {
 		nl => "Eicoseenzuur (20:1 n-9)",
 		nl_be => "Eicoseenzuur (20:1 n-9)",
 		pt => "Ácido gondoico (20:1 n-9)",
+		ro => "Acidul gondoic (20:1 n-9)",
 		ru => "Гондоиновая кислота (20:1 n-9)",
 		zh => "11-二十碳烯酸 (20:1 n-9)",
 		zh_CN => "11-二十碳烯酸 (20:1 n-9)",
@@ -1825,6 +1853,7 @@ sub mmoll_to_unit {
 		nl => "Erucazuur (22:1 n-9)",
 		nl_be => "Erucazuur (22:1 n-9)",
 		pt => "Ácido erúcico (22:1 n-9)",
+		ro => "Acid erucic (22:1 n-9)",
 		ru => "Эруковая кислота (22:1 n-9)",
 		zh => "芥酸 (22:1 n-9)",
 		zh_CN => "芥酸 (22:1 n-9)",
@@ -1841,6 +1870,7 @@ sub mmoll_to_unit {
 		nl_be => "Nervonzuur (24:1 n-9)",
 		pt => "Ácido nervônico (24:1 n-9)",
 		pt_pt => "Ácido nervónico (24:1 n-9)",
+		ro => "Acidul nervonic (24:1 n-9)",
 		ru => "Нервоновая кислота (24:1 n-9)",
 		zh => "二十四碳烯酸 (24:1 n-9)",
 		zh_CN => "二十四碳烯酸 (24:1 n-9)",
@@ -1897,6 +1927,7 @@ sub mmoll_to_unit {
 		nl_be => "Omega 3-vetzuren",
 		pt => "Ácidos graxos Ômega 3",
 		pt_pt => "Ácidos gordos Ómega 3",
+		ro => "Acizi grași omega-3",
 		ru => "Омега-3 жирные кислоты",
 		zh => "Omega 3 脂肪酸",
 		zh_CN => "Omega 3 脂肪酸",
@@ -1913,6 +1944,7 @@ sub mmoll_to_unit {
 		nl_be => "Alfa-linoleenzuur / ALA (18:3 n-3)",
 		pt => "Ácido alfa-linolênico / ALA (18:3 n-3)",
 		pt_pt => "Ácido alfa-linolénico / ALA (18:3 n-3)",
+		ro => "Acid alfa-linolenic / ALA (18:3 N-3)",
 		ru => "Альфа-линоленовая кислота / (АЛК) (18:3 n-3)",
 		zh => "α-亚麻酸 / ALA (18:3 n-3)",
 		zh_CN => "α-亚麻酸 / ALA (18:3 n-3)",
@@ -1929,6 +1961,7 @@ sub mmoll_to_unit {
 		nl => "Eicosapentaeenzuur / EPA (20:5 n-3)",
 		nl_be => "Eicosapentaeenzuur / EPA (20:5 n-3)",
 		pt => "Ácido eicosapentaenóico / EPA (20:5 n-3)",
+		ro => "Acid eicosapentaenoic / EPA (20: 5 n-3)",
 		ru => "Эйкозапентаеновая кислота / (ЭПК) (20:5 n-3)",
 		zh => "二十碳五酸 / EPA (20:5 n-3)",
 		zh_CN => "二十碳五酸 / EPA (20:5 n-3)",
@@ -1945,6 +1978,7 @@ sub mmoll_to_unit {
 		nl => "Docosahexaeenzuur / DHA (22:6 n-3)",
 		nl_be => "Docosahexaeenzuur / DHA (22:6 n-3)",
 		pt => "Ácido docosa-hexaenóico / DHA (22:6 n-3)",
+		ro => "Acid docosahexaenoic / DHA (22:6 n-3)",
 		ru => "Докозагексаеновая кислота / (ДГК) (22:6 n-3)",
 		zh => "二十二碳六酸 / DHA (22:6 n-3)",
 		zh_CN => "二十二碳六酸 / DHA (22:6 n-3)",
@@ -1965,6 +1999,7 @@ sub mmoll_to_unit {
 		nl_be => "Omega 6-vetzuren",
 		pt => "Ácidos Graxos Ômega 6",
 		pt_pt => "Ácidos gordos Ómega 6",
+		ro => "Acizi grași omega-6",
 		ru => "Омега-6 жирные кислоты",
 		zh => "Omega 6 脂肪酸",
 		zh_CN => "Omega 6 脂肪酸",
@@ -1979,6 +2014,7 @@ sub mmoll_to_unit {
 		nl => "Linolzuur / LA (18:2 n-6)",
 		nl_be => "Linolzuur / LA (18:2 n-6)",
 		pt => "Ácido linoleico / LA (18:2 n-6)",
+		ro => "Acid linoleic / LA (18:2 n-6)",
 		ru => "Линолевая кислота / (ЛК) 18:2 (n−6)",
 		zh => "亚油酸 / LA (18:2 n-6)",
 		zh_CN => "亚油酸 / LA (18:2 n-6)",
@@ -1995,6 +2031,7 @@ sub mmoll_to_unit {
 		nl_be => "Arachidonzuur / AA / ARA (20:4 n-6)",
 		pt => "Ácido araquidônico / AA / ARA (20:4 n-6)",
 		pt_pt => "Ácido araquidónico / AA / ARA (20:4 n-6)",
+		ro => "Acid arachidonic / AA / ARA (20:4 n-6)",
 		ru => "Арахидоновая кислота / (АК) 20:4 (n−6)",
 		zh => "花生四烯酸 / AA / ARA (20:4 n-6)",
 		zh_CN => "花生四烯酸 / AA / ARA (20:4 n-6)",
@@ -2010,6 +2047,7 @@ sub mmoll_to_unit {
 		nl_be => "Gamma-linoleenzuur / GLA (18:3 n-6)",
 		pt => "Ácido gama-linolênico / GLA (18:3 n-6)",
 		pt_pt => "Ácido gama-linolénico / GLA (18:3 n-6)",
+		ro => "Acid gama-linolenic / GLA (18:3 n-6)",
 		ru => "γ-линоленовая кислота / (GLA) 18:3 (n−6)",
 		zh => "γ-亚麻酸 / GLA (18:3 n-6)",
 		zh_CN => "γ-亚麻酸 / GLA (18:3 n-6)",
@@ -2025,6 +2063,7 @@ sub mmoll_to_unit {
 		nl_be => "Dihomo-gammalinoleenzuur / DGLA (20:3 n-6)",
 		pt => "Ácido dihomo-gama-linolênico / DGLA (20:3 n-6)",
 		pt_pt => "Ácido dihomo-gama-linolénico / DGLA (20:3 n-6)",
+		ro => "Acid dihomo-gamma-linolenic / DGLA (20:3 n-6)",
 		ru => "Дигомо-γ-линоленовая кислота / (ДГДК) 20:3 (n−6)",
 		zh => "二高-γ-亚麻酸 / DGLA (20:3 n-6)",
 		zh_CN => "二高-γ-亚麻酸 / DGLA (20:3 n-6)",
@@ -2045,6 +2084,7 @@ sub mmoll_to_unit {
 		nl_be => "Transvetten",
 		pt => "Gorduras trans",
 		pt_pt => "Ácidos gordos trans",
+		ro => "Acizi grași trans",
 		ru => "Транс-жиры",
 		zh => "反式脂肪",
 		zh_CN => "反式脂肪",
@@ -2065,6 +2105,7 @@ sub mmoll_to_unit {
 		nl => "Cholesterol",
 		nl_be => "Cholesterol",
 		pt => "Colesterol",
+		ro => "Colesterol",
 		ru => "Холестерин",
 		tr => "Kolestrol",
 		zh => "胆固醇",
@@ -2098,6 +2139,7 @@ sub mmoll_to_unit {
 		nb => "Kostfiber",
 		pl => "Błonnik",
 		pt => "Fibra alimentar",
+		ro => "Fibre",
 		ru => "Пищевые волокна",
 		sk => "Vláknina",
 		sl => "Prehranskih vlaknin",
@@ -2112,6 +2154,7 @@ sub mmoll_to_unit {
 		en => "Soluble fiber",
 		fr => "Fibres solubles",
 		pt => "Fibra alimentar solúvel",
+		ro => "Fibre solubile",
 		ru => "Растворимые волокна",
 		zh => "可溶性纤维",
 		zh_CN => "可溶性纤维",
@@ -2123,6 +2166,7 @@ sub mmoll_to_unit {
 		en => "Insoluble fiber",
 		fr => "Fibres insolubles",
 		pt => "Fibra alimentar insolúvel",
+		ro => "Fibre insolubile",
 		ru => "Нерастворимые волокна",
 		zh => "不可溶性纤维",
 		zh_CN => "不可溶性纤维",
@@ -2143,6 +2187,7 @@ sub mmoll_to_unit {
 		nl => "Natrium",
 		nl_be => "Sodium",
 		ja => "ナトリウム",
+		ro => "Sodiu",
 		unit_us => "mg",
 	},
 	salt => {
@@ -2203,7 +2248,7 @@ sub mmoll_to_unit {
 		lt => "Vitaminas",
 		mt => "Vitamina",
 		sk => "Vitamín",
-		ro => "Vitamina",
+		ro => "Vitamine",
 		bg => "Витамин",
 	},
 	'vitamin-a' => {
@@ -2621,6 +2666,7 @@ sub mmoll_to_unit {
 		he => "מינרלים",
 		nl => "Mineralen",
 		nl_be => "Mineralen",
+		ro => "Minerale",
 	},
 	potassium => {
 		fr => "Potassium",
@@ -2663,6 +2709,7 @@ sub mmoll_to_unit {
 		he => "ביקרבונט (מימן פחמתי)",
 		nl => "Bicarbonaat",
 		nl_be => "Bicarbonaat",
+		ro => "Bicarbonat",
 	},
 	chloride => {
 		fr => "Chlorure",
@@ -2700,13 +2747,15 @@ sub mmoll_to_unit {
 		en => "Silica",
 		es => "Sílice",
 		el => "Πυρίτιο",
-		unit => "mg",
 		it => "Silicio",
 		pt => "Sílica",
 		de => "Kieselerde",
 		he => "צורן דו־חמצני",
 		nl => "Silicium",
 		nl_be => "Silicium",
+		ro => "Dioxid de siliciu",
+
+		unit => "mg",
 	},
 	calcium => {
 		fr => "Calcium",
@@ -2855,6 +2904,7 @@ sub mmoll_to_unit {
 		fi => "Sinkki",
 		nl => "Zink",
 		nl_be => "Zink",
+		ro => "Zinc",
 		sv => "Zink",
 		lv => "Cinks",
 		cs => "Zinek",
@@ -3098,6 +3148,9 @@ sub mmoll_to_unit {
 		nl => "Cafeïne",
 		nl_be => "Cafeïne",
 		pt => "Cafeína",
+		ro => "Cafeină",
+
+		unit => "mg",
 	},
 	taurine => {
 		zh_hans => "牛磺酸",
@@ -3170,6 +3223,7 @@ sub mmoll_to_unit {
 		el => "Αποτύπωμα άνθρακα/Εκπομπές CO2",
 		it=> "Emissioni di CO2 (impronta climatica)",
 		pt => "Pegada de carbono / Emissões de CO<sub>2</sub>",
+		ro => "Amprentă carbon / Emisii CO2",
 		de => "Carbon Footprint / CO2-Emissionen",
 		he => "טביעת רגל פחמנית / פליטת פחמן דו־חמצני",
 		nl => "Ecologische voetafdruk / CO2-uitstoot",
@@ -3191,29 +3245,32 @@ sub mmoll_to_unit {
 	"water-hardness" => {
 		en => "Water hardness",
 		fr => "Dureté de l'eau",
+		ro => "Duritatea apei",
 		ru => "Жёсткость воды",
 		de => "Wasserhärte",
 		unit => "mmol/l",
 	},
 	"fruits-vegetables-nuts" => {
-		en => "Fruits, vegetables and nuts",
-		fr => "Fruits, légumes et noix",
+		en => "Fruits, vegetables, nuts and rapeseed, walnut and olive oils",
+		fr => "Fruits, légumes, noix et huiles de colza, noix et olive",
 		es => "Frutas, verduras y nueces",
 		el => "Φρούτα, λαχανικά, καρποί",
 		nl => "Fruit, groenten en noten",
 		nl_be => "Fruit, groenten en noten",
+		ro => "Fructe, legume, nuci",
 		de => "Obst, Gemüse und Nüsse",
 		unit => "%",
 	},
 	"fruits-vegetables-nuts-dried" => {
 		en => "Fruits, vegetables and nuts - dried",
 		fr => "Fruits, légumes et noix - séchés",
+		ro => "Fructe, legume, nuci uscate",
 		unit => "%",
 	},
 
 	"fruits-vegetables-nuts-estimate" => {
-		en => "Fruits, vegetables and nuts (estimate from ingredients list)",
-		fr => "Fruits, légumes et noix (estimation avec la liste des ingrédients)",
+		en => "Fruits, vegetables, nuts and rapeseed, walnut and olive oils (estimate from ingredients list)",
+		fr => "Fruits, légumes, noix et huiles de colza, noix et olive (estimation avec la liste des ingrédients)",
 		es => "Frutas, verduras y nueces (estimación de la lista de ingredientes)",
 		nl => "Fruit, groenten en noten (Schat uit ingrediëntenlijst)",
 		nl_be => "Fruit, groenten en noten (Schat uit ingrediëntenlijst)",
@@ -3237,6 +3294,7 @@ sub mmoll_to_unit {
 		fr => "Cacao (minimum)",
 		nl => "Cacao (minimum)",
 		pt => "Cacau (minimum)",
+		ro => "Cacao (minim)",
 		unit => "%",
 	},
 	"nutrition-score-uk" => {
@@ -3253,6 +3311,11 @@ sub mmoll_to_unit {
 		el => "Βαθμολογία θρεπτικής αξίας-FR",
 		unit => "",
 	},
+	"nova-group" => {
+		en => "NOVA group",
+		fr => "Groupe NOVA",
+		unit => "",
+	},
 	"beta-carotene" => {
 		de => "Beta-Carotin",
 		en => "Beta carotene",
@@ -3266,10 +3329,12 @@ sub mmoll_to_unit {
 		en => "Chlorophyl",
 		nl => "Chlorofyl",
 		nl_be => "Chlorofyl",
+		ro => "Clorofilă",
 	},
 	"nutrition-grade" => {
 		fr => "Note nutritionnelle",
 		en => "Nutrition grade",
+		ro => "Notă nutrițională",
 	},
 	"choline" => {
 		ar => "كولين",
@@ -3424,7 +3489,7 @@ sub canonicalize_nutriment($$) {
 
 	my $lc = shift;
 	my $label = shift;
-	my $nid = get_fileid($label);
+	my $nid = get_string_id_for_lang($lc, $label);
 	if ($lc eq 'fr') {
 		$nid =~ s/^dont-//;
 	}
@@ -3496,7 +3561,9 @@ foreach my $nid (keys %Nutriments) {
 
 my $international_units = qr/kg|g|mg|µg|oz|l|dl|cl|ml|(fl(\.?)(\s)?oz)/i;
 my $chinese_units = qr/(?:\N{U+6BEB}?\N{U+514B})|(?:\N{U+516C}?\N{U+65A4})|(?:[\N{U+6BEB}\N{U+516C}]?\N{U+5347})|\N{U+5428}/i;
-my $units = qr/$international_units|$chinese_units/i;
+my $russian_units = qr/г|мг|кг|л|дл|кл|мл/i;
+my $units = qr/$international_units|$chinese_units|$russian_units/i;
+
 sub normalize_quantity($) {
 
 	# return the size in g or ml for the whole product
@@ -3601,7 +3668,7 @@ my %pnns = (
 );
 
 foreach my $group (keys %pnns) {
-	$pnns{get_fileid($group)} = get_fileid($pnns{$group});
+	$pnns{get_string_id_for_lang("en", $group)} = get_string_id_for_lang("en", $pnns{$group});
 }
 
 
@@ -3818,7 +3885,7 @@ sub special_process_product($) {
 					or has_tag($product_ref, 'categories', 'en:artificially-sweetened-beverages')));
 
 			$product_ref->{pnns_groups_2} = $properties{categories}{$categoryid}{"pnns_group_2:en"};
-			$product_ref->{pnns_groups_2_tags} = [get_fileid($product_ref->{pnns_groups_2}), "known"];
+			$product_ref->{pnns_groups_2_tags} = [get_string_id_for_lang("en", $product_ref->{pnns_groups_2}), "known"];
 
 			# Let waters and teas take precedence over unsweetened-beverages
 			if ($properties{categories}{$categoryid}{"pnns_group_2:en"} ne "Unsweetened beverages") {
@@ -3830,7 +3897,7 @@ sub special_process_product($) {
 	if (defined $product_ref->{pnns_groups_2}) {
 		if (defined $pnns{$product_ref->{pnns_groups_2}}) {
 			$product_ref->{pnns_groups_1} = $pnns{$product_ref->{pnns_groups_2}};
-			$product_ref->{pnns_groups_1_tags} = [get_fileid($product_ref->{pnns_groups_1}), "known"];
+			$product_ref->{pnns_groups_1_tags} = [get_string_id_for_lang("en", $product_ref->{pnns_groups_1}), "known"];
 		}
 		else {
 			$log->warn("no pnns group 1 for pnns group 2", { pnns_group_2 => $product_ref->{pnns_groups_2} }) if $log->is_warn();
@@ -3853,26 +3920,27 @@ sub fix_salt_equivalent($) {
 	my $product_ref = shift;
 
 	# salt
-	
+
 	# EU fixes the conversion: sodium = salt / 2.5 (instead of 2.54 previously)
 
 	foreach my $product_type ("", "_prepared") {
 
 		# use the salt value by default
-		if ((defined $product_ref->{nutriments}{'salt' . $product_type}) and ($product_ref->{nutriments}{'salt' . $product_type} ne '')) {
+		if ((defined $product_ref->{nutriments}{'salt' . $product_type . "_value"})
+			and ($product_ref->{nutriments}{'salt' . $product_type . "_value"} ne '')) {
 		assign_nid_modifier_value_and_unit(
 			$product_ref,
 			'sodium' . $product_type,
 			$product_ref->{nutriments}{'salt' . $product_type . '_modifier'},
-			$product_ref->{nutriments}{'salt' . $product_type} / 2.5,
+			$product_ref->{nutriments}{'salt' . $product_type . "_value"} / 2.5,
 			$product_ref->{nutriments}{'salt' . $product_type . '_unit'} );
 		}
-		elsif ((defined $product_ref->{nutriments}{'sodium' . $product_type}) and ($product_ref->{nutriments}{'sodium' . $product_type} ne '')) {
+		elsif ((defined $product_ref->{nutriments}{'sodium' . $product_type  . "_value"}) and ($product_ref->{nutriments}{'sodium' . $product_type . "_value"} ne '')) {
 			assign_nid_modifier_value_and_unit(
 			$product_ref,
 			'salt' . $product_type,
 			$product_ref->{nutriments}{'sodium' . $product_type . '_modifier'},
-			$product_ref->{nutriments}{'sodium' . $product_type} * 2.5,
+			$product_ref->{nutriments}{'sodium' . $product_type  . "_value"} * 2.5,
 			$product_ref->{nutriments}{'sodium' . $product_type . '_unit'});
 		}
 	}
@@ -3894,6 +3962,13 @@ my %fruits_vegetables_nuts_by_category = (
 	"en:jams" => 50,
 	"en:fruits-based-foods" => 85,
 	"en:vegetables-based-foods" => 85,
+	# 2019/08/31: olive oil, walnut oil and colza oil are now considered in the same fruits, vegetables and nuts category
+	"en:olive-oils" => 100,
+	"en:walnut-oils" => 100,
+	# adding multiple wordings for colza/rapeseed oil in case we change it at some point
+	"en:colza-oils" => 100,
+	"en:rapeseed-oils" => 100,
+	"en:rapeseeds-oils" => 100,
 );
 
 my @fruits_vegetables_nuts_by_category_sorted = sort { $fruits_vegetables_nuts_by_category{$b} <=> $fruits_vegetables_nuts_by_category{$a} } keys %fruits_vegetables_nuts_by_category;
@@ -4002,7 +4077,7 @@ sub compute_nutrition_score($) {
 		# for fiber, compute score without fiber points if the value is not known
 		# foreach my $nid ("energy", "saturated-fat", "sugars", "sodium", "fiber", "proteins") {
 
-		foreach my $nid ("energy", "saturated-fat", "sugars", "sodium", "proteins") {
+		foreach my $nid ("energy", "fat", "saturated-fat", "sugars", "sodium", "proteins") {
 			if (not defined $product_ref->{nutriments}{$nid . $prepared . "_100g"}) {
 				$product_ref->{"nutrition_grades_tags"} = [ "unknown" ];
 				push @{$product_ref->{misc_tags}}, "en:nutrition-not-enough-data-to-compute-nutrition-score";
@@ -4379,6 +4454,10 @@ sub compute_nutrition_grade($$) {
 
 	my $grade = "";
 
+	if (not defined $fr_score) {
+		return '';
+	}
+
 	if ($product_ref->{nutrition_score_beverage}) {
 
 		# Tableau 6 : Seuils du score FSA retenus pour les boissons
@@ -4434,6 +4513,7 @@ sub compute_nutrition_grade($$) {
 			$grade = 'e';
 		}
 	}
+	return $grade;
 }
 
 
@@ -4534,7 +4614,7 @@ sub compute_serving_size_data($) {
 		}
 
 		# Carbon footprint
-				
+
 		if (defined $product_ref->{nutriments}{"carbon-footprint-from-meat-or-fish_100g"}) {
 
 			if (defined $product_ref->{serving_quantity}) {
@@ -4547,7 +4627,7 @@ sub compute_serving_size_data($) {
 				= sprintf("%.2e",$product_ref->{nutriments}{"carbon-footprint-from-meat-or-fish_100g"} / 100.0 * $product_ref->{product_quantity}) + 0.0;
 			}
 		}
-		
+
 		if (defined $product_ref->{nutriments}{"carbon-footprint-from-known-ingredients_100g"}) {
 
 			if (defined $product_ref->{serving_quantity}) {
@@ -4559,7 +4639,7 @@ sub compute_serving_size_data($) {
 				$product_ref->{nutriments}{"carbon-footprint-from-known-ingredients_product"}
 				= sprintf("%.2e",$product_ref->{nutriments}{"carbon-footprint-from-known-ingredients_100g"} / 100.0 * $product_ref->{product_quantity}) + 0.0;
 			}
-		}		
+		}
 
 	}
 
@@ -4742,8 +4822,8 @@ sub compute_nutrient_levels($) {
 			else {
 				$product_ref->{nutrient_levels}{$nid} = 'moderate';
 			}
-			# push @{$product_ref->{nutrient_levels_tags}}, get_fileid(sprintf(lang("nutrient_in_quantity"), $Nutriments{$nid}{$lc}, lang($product_ref->{nutrient_levels}{$nid} . "_quantity")));
-			push @{$product_ref->{nutrient_levels_tags}}, 'en:' . get_fileid(sprintf($Lang{nutrient_in_quantity}{en}, $Nutriments{$nid}{en}, $Lang{$product_ref->{nutrient_levels}{$nid} . "_quantity"}{en}));
+			push @{$product_ref->{nutrient_levels_tags}},
+				'en:' . get_string_id_for_lang("en", sprintf($Lang{nutrient_in_quantity}{en}, $Nutriments{$nid}{en}, $Lang{$product_ref->{nutrient_levels}{$nid} . "_quantity"}{en}));
 
 		}
 		else {
@@ -4858,6 +4938,7 @@ foreach my $key (keys %Nutriments) {
 
 Hash::Util::lock_keys(%Nutriments);
 
+$ec_code_regexp = "ce|eec|ec|eg|we|ek";
 
 sub normalize_packager_codes($) {
 
@@ -4906,7 +4987,7 @@ sub normalize_packager_codes($) {
 		my $code3 = shift;
 		$countrycode = uc($countrycode);
 		$code3 = uc($code3);
-		return "$countrycode $code1.$code2/$code3 CE";
+		return "$countrycode $code1.$code2/$code3 EC";
 	};
 
 	my $normalize_ce_code = sub ($$) {
@@ -4935,28 +5016,58 @@ sub normalize_packager_codes($) {
 
 	# CE codes -- FR 67.145.01 CE
 	#$codes =~ s/(^|,|, )(fr)(\s|-|_|\.)?((\d|\.|_|\s|-)+)(\.|_|\s|-)?(ce)?\b/$1 . $normalize_fr_ce_code->($2,$4)/ieg;	 # without CE, only for FR
-	$codes =~ s/(^|,|, )(fr)(\s|-|_|\.)?((\d|\.|_|\s|-)+?)(\.|_|\s|-)?(ce|eec|ec|eg)\b/$1 . $normalize_fr_ce_code->($2,$4)/ieg;
+	$codes =~ s/(^|,|, )(fr)(\s|-|_|\.)?((\d|\.|_|\s|-)+?)(\.|_|\s|-)?($ec_code_regexp)\b/$1 . $normalize_fr_ce_code->($2,$4)/ieg;
 
-	$codes =~ s/(^|,|, )(uk)(\s|-|_|\.)?((\w|\.|_|\s|-)+?)(\.|_|\s|-)?(ce|eec|ec|eg)\b/$1 . $normalize_uk_ce_code->($2,$4)/ieg;
-	$codes =~ s/(^|,|, )(uk)(\s|-|_|\.|\/)*((\w|\.|_|\s|-|\/)+?)(\.|_|\s|-)?(ce|eec|ec|eg)\b/$1 . $normalize_uk_ce_code->($2,$4)/ieg;
+	$codes =~ s/(^|,|, )(uk)(\s|-|_|\.)?((\w|\.|_|\s|-)+?)(\.|_|\s|-)?($ec_code_regexp)\b/$1 . $normalize_uk_ce_code->($2,$4)/ieg;
+	$codes =~ s/(^|,|, )(uk)(\s|-|_|\.|\/)*((\w|\.|_|\s|-|\/)+?)(\.|_|\s|-)?($ec_code_regexp)\b/$1 . $normalize_uk_ce_code->($2,$4)/ieg;
 
 	# NO-RGSEAA-21-21552-SE -> ES 21.21552/SE
 
 
 	$codes =~ s/(^|,|, )n(o|°|º)?(\s|-|_|\.)?rgseaa(\s|-|_|\.|:|;)*(\d\d)(\s|-|_|\.)?(\d+)(\s|-|_|\.|\/|\\)?(\w+)\b/$1 . $normalize_es_ce_code->('es',$5,$7,$9)/ieg;
-	$codes =~ s/(^|,|, )(es)(\s|-|_|\.)?(\d\d)(\s|-|_|\.|:|;)*(\d+)(\s|-|_|\.|\/|\\)?(\w+)(\.|_|\s|-)?(ce|eec|ec|eg)?(?=,|$)/$1 . $normalize_es_ce_code->('es',$4,$6,$8)/ieg;
+	$codes =~ s/(^|,|, )(es)(\s|-|_|\.)?(\d\d)(\s|-|_|\.|:|;)*(\d+)(\s|-|_|\.|\/|\\)?(\w+)(\.|_|\s|-)?($ec_code_regexp)?(?=,|$)/$1 . $normalize_es_ce_code->('es',$4,$6,$8)/ieg;
 
 	# LU L-2 --> LU L2
 
-	$codes =~ s/(^|,|, )(lu)(\s|-|_|\.|\/)*(\w)( |-|\.)(\d+)(\.|_|\s|-)?(ce|eec|ec|eg|we)\b/$1 . $normalize_lu_ce_code->('lu',$4,$6)/ieg;
+	$codes =~ s/(^|,|, )(lu)(\s|-|_|\.|\/)*(\w)( |-|\.)(\d+)(\.|_|\s|-)?($ec_code_regexp)\b/$1 . $normalize_lu_ce_code->('lu',$4,$6)/ieg;
 
 	# RS 731 -> RS 731 EC
 
-	$codes =~ s/(^|,|, )(rs)(\s|-|_|\.|\/)*(\w+)(\.|_|\s|-)?(ce|eec|ec|eg|we)?\b/$1 . $normalize_rs_ce_code->('rs',$4)/ieg;
+	$codes =~ s/(^|,|, )(rs)(\s|-|_|\.|\/)*(\w+)(\.|_|\s|-)?($ec_code_regexp)?\b/$1 . $normalize_rs_ce_code->('rs',$4)/ieg;
 
-	$codes =~ s/(^|,|, )(\w\w)(\s|-|_|\.|\/)*((\w|\.|_|\s|-|\/)+?)(\.|_|\s|-)?(ce|eec|ec|eg|we|ek)\b/$1 . $normalize_ce_code->($2,$4)/ieg;
+	$codes =~ s/(^|,|, )(\w\w)(\s|-|_|\.|\/)*((\w|\.|_|\s|-|\/)+?)(\.|_|\s|-)?($ec_code_regexp)\b/$1 . $normalize_ce_code->($2,$4)/ieg;
 
 	return $codes;
+}
+
+my %local_ec = (
+	DE => "EG",
+	ES => "CE",
+	FR => "CE",
+	IT => "CE",
+	NL => "EG",
+	PL => "WE",
+	PT => "CE",
+	UK => "EC",
+);
+
+sub localize_packager_code($) {
+
+	my $code = shift;
+
+	my $local_code = $code;
+
+	if ($code =~ /^(\w\w) (.*) EC$/i) {
+
+		my $country_code = uc($1);
+		my $actual_code = $2;
+
+		if (defined $local_ec{$country_code}) {
+			$local_code = $country_code . " " . $actual_code . " " . $local_ec{$country_code};
+		}
+	}
+
+	return $local_code;
 }
 
 
@@ -4981,7 +5092,7 @@ sub get_canon_local_authority($) {
 	$canon_local_authority =~ s/ +/ /g;
 	$canon_local_authority =~ s/^ //;
 	$canon_local_authority =~ s/ $//;
-	$canon_local_authority = get_fileid($canon_local_authority);
+	$canon_local_authority = get_string_id_for_lang("en",$canon_local_authority);
 
 	return $canon_local_authority;
 }

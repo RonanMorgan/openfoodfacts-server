@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use Modern::Perl '2012';
+use Modern::Perl '2017';
 use utf8;
 
 use CGI::Carp qw(fatalsToBrowser);
@@ -60,6 +60,7 @@ my $interface_version = '20150316.jqm2';
 my %response = ();
 
 my $code = normalize_code(param('code'));
+my $product_id;
 
 $log->debug("start", { code => $code, lc => $lc }) if $log->is_debug();
 
@@ -72,9 +73,11 @@ if ($code !~ /^\d+$/) {
 }
 else {
 
-	my $product_ref = retrieve_product($code);
+	my $product_id = product_id_for_user($User_id, $Org_id, $code);
+	my $product_ref = retrieve_product($product_id);
+
 	if (not defined $product_ref) {
-		$product_ref = init_product($code);
+		$product_ref = init_product($User_id, $Org_id, $code);
 		$product_ref->{interface_version_created} = $interface_version;
 	}
 
@@ -148,6 +151,8 @@ else {
 
 		my %lc_overrides = (
 				au => "en",
+				br => "pt",
+				co => "es",
 				es => "es",
 				it => "it",
 				de => "de",
@@ -155,6 +160,7 @@ else {
 				gb => "en",
 				pt => "pt",
 				nl => "nl",
+				no => "no",
 				us => "en",
 				ie => "en",
 				nz => "en",
@@ -278,7 +284,7 @@ else {
 	detect_allergens_from_text($product_ref);
 	compute_carbon_footprint_from_ingredients($product_ref);
 	compute_carbon_footprint_from_meat_or_fish($product_ref);
-	
+
 	# Nutrition data
 
 	# Do not allow nutrition edits through API for data provided by producers
@@ -438,13 +444,17 @@ else {
 
 	my $time = time();
 	$comment = $comment . remove_tags_and_quote(decode utf8=>param('comment'));
-	store_product($product_ref, $comment);
+	if (store_product($product_ref, $comment)) {
+		# Notify robotoff
+		send_notification_for_product_change($product_ref, "updated");
 
-	# Notify robotoff
-	send_notification_for_product_change($product_ref, "updated");
-
-	$response{status} = 1;
-	$response{status_verbose} = 'fields saved';
+		$response{status} = 1;
+		$response{status_verbose} = 'fields saved';
+	}
+	else {
+		$response{status} = 0;
+		$response{status_verbose} = 'not modified';
+	}
 }
 
 my $data =  encode_json(\%response);
